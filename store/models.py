@@ -2,28 +2,54 @@ from django.db import models
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Category"
-        verbose_name_plural = "Categories"
-    
+        ordering = ['name']
+        verbose_name_plural = 'Categories'
+
     def __str__(self):
         return self.name
 
 
 class Product(models.Model):
     name = models.CharField(max_length=256)
-    price = models.DecimalField(max_digits=7, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='products', null=True)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return self.name
 
+
 class ProductImage(models.Model):
     image = models.ImageField(upload_to='product_pics/')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images', null=True, blank=True)
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='images'
+    )
+    alt_text = models.CharField(max_length=256, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
 
     def __str__(self):
-        return self.product.name
+        return f'Image for {self.product.name}'
